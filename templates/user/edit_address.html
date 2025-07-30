@@ -1,0 +1,100 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Add Address</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 87vh;">
+    <form method="POST" class="w-50 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Edit Address</h2>
+            <a href="{{ url_for('user.profile') }}" class="btn btn-light" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <!-- Row 1: House Number (1 part) & Address (3 parts) -->
+        <div class="row mb-3">
+            <div class="col-3">
+                <label for="house_number" class="form-label">House No.</label>
+                <input type="text" name="house_number" id="house_number"
+                       class="form-control bg-dark text-light border-light"
+                       value="{{ user.address.house_number }}">
+            </div>
+            <div class="col-9">
+                <label for="address" class="form-label">Street Address</label>
+                <input type="text" name="address" id="address"
+                       class="form-control bg-dark text-light border-light"
+                       value="{{ user.address.address }}" required>
+            </div>
+        </div>
+
+        <!-- Row 2: City, District, Pincode (equal parts) -->
+        <div class="row mb-3">
+            <div class="col">
+                <label for="city" class="form-label">City</label>
+                <input type="text" name="city" id="city"
+                       class="form-control bg-dark text-light border-light"
+                       value="{{ user.address.city }}" required>
+            </div>
+            <div class="col">
+                <label for="district" class="form-label">District</label>
+                <input type="text" name="district" id="district"
+                       class="form-control bg-dark text-light border-light"
+                       value="{{ user.address.district }}">
+            </div>
+            <div class="col">
+                <label for="pincode" class="form-label">Pincode</label>
+                <input type="text" name="pincode" id="pincode"
+                       class="form-control bg-dark text-light border-light"
+                       value="{{ user.address.pincode }}" pattern="[0-9]{6}" maxlength="6" minlength="6" required>
+            </div>
+        </div>
+
+        <!-- Row 3: State & Country -->
+        <div class="row mb-4">
+            <div class="col-6">
+                <label for="state" class="form-label">State</label>
+                <select class="form-select bg-dark text-light border-light" name="state" id="state" required>
+                    <option disabled value="" {% if not user.address.state %}selected{% endif %}>Select State</option>
+                    {% set states = [
+                        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+                        'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+                        'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+                        'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+                        'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+                        'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Lakshadweep', 'Puducherry'
+                    ] %}
+                    {% for state in states %}
+                        <option value="{{ state }}" {% if user.address.state == state %}selected{% endif %}>{{ state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" name="country" id="country"
+                       class="form-control bg-dark text-light border-light"
+                       value="India" required>
+            </div>
+        </div>
+
+        <!-- Submit & Cancel Buttons -->
+        <div class="d-flex justify-content-center gap-4">
+            <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-arrow-repeat me-1"></i>Update
+            </button>
+            <a href="{{ url_for('user.profile') }}" class="btn btn-warning px-4">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

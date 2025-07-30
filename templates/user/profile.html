@@ -1,0 +1,425 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Profile</title>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3" style="min-height: 87vh;">
+    <div class="row h-100 ps-3 py-2 g-4">
+
+        <!-- Left Sidebar (Profile) -->
+        <div class="col-12 col-lg-3 d-flex flex-column align-items-center border border-light border-2 rounded p-4 bg-secondary-subtle">
+            <div class="w-100 d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Profile</h2>
+                <a href="{{ url_for('user.index') }}" class="btn btn-outline-light" title="Go Back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </div>
+            <hr class="w-100 border border-light border-2">
+
+            <!-- Profile Image -->
+            <img src="../../static/images/user_profile.png"
+                 alt="Profile Image"
+                 class="rounded-circle bg-dark border border-light border-2 d-flex justify-content-center align-items-center mx-auto my-3"
+                 style="width: 220px; height: 220px;">
+
+            <div class="mt-4 text-center w-100">
+                <h5 class="text-white">{{ user.full_name }}</h5>
+                <p class="text-light small mb-1">{{ user.email }}</p>
+                <p class="text-secondary small mb-2">Active Since: {{ user.registered_at.strftime('%d %b, %Y') }}</p>
+
+                <!-- Edit Profile and Change Password Buttons -->
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="bi bi-pencil-square me-1"></i>Edit Profile
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="bi bi-key-fill me-1"></i>Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content -->
+        <div class="col-12 col-lg-9 d-flex flex-column gap-4">
+
+            <!-- Address Section -->
+            <div class="border border-light border-2 rounded p-4 bg-secondary-subtle">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i>
+                        Address
+                    </h3>
+                    {% if user.address %}
+                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#editAddressModal" title="Edit Address">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#addAddressModal" title="Add Address">Add Address</button>
+                    {% endif %}
+                </div>
+                <hr class="w-100 border border-light border-2">
+                {% if user.address %}
+                    <p class="mb-1"><strong>House:</strong> {{ user.address.house_number or '-' }}, {{ user.address.address }}</p>
+                    <p class="mb-1"><strong>City:</strong> {{ user.address.city }}, <strong>District:</strong> {{ user.address.district or '-' }}</p>
+                    <p class="mb-1"><strong>State:</strong> {{ user.address.state }}, <strong>PIN:</strong> {{ user.address.pincode }}</p>
+                    <p class="mb-0"><strong>Country:</strong> {{ user.address.country or 'India' }}</p>
+                {% else %}
+                    <p class="text-muted">No address added.</p>
+                {% endif %}
+            </div>
+
+            <!-- Vehicles Section -->
+            <div class="border border-light border-2 rounded p-4 bg-secondary-subtle" style="max-height: 55vh; overflow-y: auto;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">
+                        <i class="bi bi-car-front-fill text-info me-1"></i>
+                        My Vehicles
+                    </h3>
+                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#addVehicleModal">Add Vehicle</button>
+                </div>
+                <hr class="w-100 border border-light border-2">
+                {% if user.vehicles %}
+                    <div class="row g-3">
+                        {% for vehicle in user.vehicles %}
+                        {% set parked_reservation = vehicle.reservations | selectattr('status', 'equalto', 'A') | list | first %}
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card bg-dark text-light h-100 d-flex flex-column border-light shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center bg-secondary-subtle">
+                                    <span class="text-uppercase fw-semibold">{{ vehicle.vehicle_type }}</span>
+                                    {% if parked_reservation %}
+                                        <a href="#" class="badge bg-success text-decoration-none"
+                                           data-bs-toggle="modal" data-bs-target="#parkedModal{{ vehicle.id }}" title="View Parking Info">
+                                            <i class="bi bi-check-circle me-1"></i>Parked In
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-slash-circle me-1"></i>Not Parked
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body flex-grow-1">
+                                    <p><strong>Number:</strong> {{ vehicle.vehicle_number }}</p>
+                                    <p class="text-muted small mb-0">Added: {{ vehicle.added_at.strftime('%b %d, %Y') }}</p>
+                                </div>
+                                <div class="card-footer d-flex gap-2 justify-content-end bg-dark">
+                                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editVehicleModal{{ vehicle.id }}" title="Edit">
+                                        <i class="bi bi-pencil-square me-1"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteVehicleModal{{ vehicle.id }}" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Vehicle Modal -->
+                        <div class="modal fade" id="editVehicleModal{{ vehicle.id }}" tabindex="-1" aria-labelledby="editVehicleLabel{{ vehicle.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form method="POST" action="{{ url_for('user.edit_vehicle', vehicle_id=vehicle.id) }}" class="modal-content bg-dark text-light">
+                                    <div class="modal-header bg-secondary-subtle">
+                                        <h5 class="modal-title" id="editVehicleLabel{{ vehicle.id }}">Edit Vehicle</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body bg-secondary-subtle">
+                                        <div class="mb-3">
+                                            <label for="editVehicleNumber{{ vehicle.id }}" class="form-label">Vehicle Number</label>
+                                            <input type="text" id="editVehicleNumber{{ vehicle.id }}" name="vehicle_number" class="form-control" value="{{ vehicle.vehicle_number }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editVehicleType{{ vehicle.id }}" class="form-label">Vehicle Type</label>
+                                            <select id="editVehicleType{{ vehicle.id }}" name="vehicle_type" class="form-select" required>
+                                                <option value="Car" {% if vehicle.vehicle_type == 'Car' %}selected{% endif %}>Car</option>
+                                                <option value="Bike" {% if vehicle.vehicle_type == 'Bike' %}selected{% endif %}>Bike</option>
+                                                <option value="Other" {% if vehicle.vehicle_type == 'Other' %}selected{% endif %}>Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-secondary-subtle">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-light">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Delete Vehicle Modal -->
+                        <div class="modal fade" id="deleteVehicleModal{{ vehicle.id }}" tabindex="-1" aria-labelledby="deleteVehicleLabel{{ vehicle.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form method="POST" action="{{ url_for('user.delete_vehicle', vehicle_id=vehicle.id) }}" class="modal-content bg-dark text-light">
+                                    <div class="modal-header bg-secondary-subtle">
+                                        <h5 class="modal-title" id="deleteVehicleLabel{{ vehicle.id }}">Confirm Delete</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body bg-secondary-subtle">
+                                        Are you sure you want to delete <strong>{{ vehicle.vehicle_type }}</strong> (No. {{ vehicle.vehicle_number }})? This action cannot be undone.
+                                    </div>
+                                    <div class="modal-footer bg-secondary-subtle">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Parked Vehicle Modal -->
+                        {% if parked_reservation %}
+                        <div class="modal fade" id="parkedModal{{ vehicle.id }}" tabindex="-1" aria-labelledby="parkedModalLabel{{ vehicle.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark text-light">
+                                    <div class="modal-header bg-secondary-subtle">
+                                        <h5 class="modal-title" id="parkedModalLabel{{ vehicle.id }}">Current Parking Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body bg-secondary-subtle">
+                                        <p><strong>Spot:</strong> #{{ parked_reservation.spot.spot_number }}</p>
+                                        <p><strong>Location:</strong> {{ parked_reservation.spot.lot.prime_location_name }}</p>
+                                        <p><strong>Lot Address:</strong><br>
+                                            {{ parked_reservation.spot.lot.address.house_number or '' }} {{ parked_reservation.spot.lot.address.address }},<br>
+                                            {{ parked_reservation.spot.lot.address.city }}, {{ parked_reservation.spot.lot.address.state }} - {{ parked_reservation.spot.lot.address.pincode }}<br>
+                                            {{ parked_reservation.spot.lot.address.country or 'India' }}
+                                        </p>
+                                        <p><strong>Parked Since:</strong> {{ parked_reservation.parking_timestamp.strftime('%d %b %Y, %I:%M %p') }}</p>
+                                        <p><strong>Booked By:</strong> {{ parked_reservation.user.full_name }}</p>
+                                    </div>
+                                    <div class="modal-footer bg-secondary-subtle">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No vehicles added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ url_for('user.update_profile') }}" class="modal-content bg-dark text-light">
+            <div class="modal-header d-flex flex-column align-items-start bg-secondary-subtle">
+                <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
+                <small class="text-secondary mt-1">Last Updated: {{ user.updated_at.strftime('%d %b, %Y') }}</small>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; top: 1rem; right: 1rem;"></button>
+            </div>
+            <div class="modal-body bg-secondary-subtle">
+                <div class="mb-3">
+                    <label for="fullNameInput" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullNameInput" name="full_name" value="{{ user.full_name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="emailInput" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="emailInput" name="email" value="{{ user.email }}" required>
+                </div>
+            </div>
+            <div class="modal-footer bg-secondary-subtle">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-light">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ url_for('user.update_password') }}" class="modal-content bg-dark text-light">
+            <div class="modal-header bg-secondary-subtle">
+                <h5 class="modal-title" id="changePasswordLabel">Change Password</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-secondary-subtle">
+                <div class="mb-3">
+                    <label for="currentPasswordInput" class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="currentPasswordInput" name="current_password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="newPasswordInput" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="newPasswordInput" name="new_password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmNewPasswordInput" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirmNewPasswordInput" name="confirm_new_password" required>
+                </div>
+            </div>
+            <div class="modal-footer bg-secondary-subtle">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-warning">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Address Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form method="POST" action="{{ url_for('user.add_address') }}" class="modal-content bg-dark text-light">
+            <div class="modal-header bg-secondary-subtle">
+                <h5 class="modal-title" id="addAddressLabel">Add Address</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-secondary-subtle">
+                <div class="row gy-3">
+                    <div class="col-md-3">
+                        <label for="houseNumberInput" class="form-label">House Number</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="houseNumberInput" name="house_number" placeholder="e.g., 23B">
+                    </div>
+                    <div class="col-md-9">
+                        <label for="addressInput" class="form-label">Street Address</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="addressInput" name="address" placeholder="e.g., 5th Main Road" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cityInput" class="form-label">City</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="cityInput" name="city" placeholder="Bengaluru" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="districtInput" class="form-label">District</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="districtInput" name="district" placeholder="Bangalore Urban">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="pincodeInput" class="form-label">Pincode</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="pincodeInput" name="pincode" placeholder="560038" pattern="[0-9]{6}" maxlength="6" minlength="6" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="stateSelect" class="form-label">State</label>
+                        <select class="form-select bg-dark text-light border-light" id="stateSelect" name="state" required>
+                            <option disabled selected value="">Select State</option>
+                            {% set states = [
+                                'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+                                'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+                                'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+                                'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+                                'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+                                'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Lakshadweep', 'Puducherry'
+                            ] %}
+                            {% for state in states %}
+                            <option value="{{ state }}">{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="countryInput" class="form-label">Country</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="countryInput" name="country" value="India" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-secondary-subtle">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-light">Add Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Address Modal -->
+<div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form method="POST" action="{{ url_for('user.edit_address') }}" class="modal-content bg-dark text-light">
+            <div class="modal-header bg-secondary-subtle">
+                <h5 class="modal-title" id="editAddressLabel">Edit Address</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-secondary-subtle">
+                {% if user.address %}
+                <div class="row gy-3">
+                    <div class="col-md-3">
+                        <label for="editHouseNumberInput" class="form-label">House Number</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editHouseNumberInput" name="house_number" value="{{ user.address.house_number }}">
+                    </div>
+                    <div class="col-md-9">
+                        <label for="editAddressInput" class="form-label">Street Address</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editAddressInput" name="address" value="{{ user.address.address }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="editCityInput" class="form-label">City</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editCityInput" name="city" value="{{ user.address.city }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="editDistrictInput" class="form-label">District</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editDistrictInput" name="district" value="{{ user.address.district }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="editPincodeInput" class="form-label">Pincode</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editPincodeInput" name="pincode" value="{{ user.address.pincode }}" pattern="[0-9]{6}" maxlength="6" minlength="6" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="editStateSelect" class="form-label">State</label>
+                        <select class="form-select bg-dark text-light border-light" id="editStateSelect" name="state" required>
+                            <option value="" disabled>Select State</option>
+                            {% set states = [
+                                'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+                                'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+                                'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+                                'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+                                'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+                                'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Lakshadweep', 'Puducherry'
+                            ] %}
+                            {% for state in states %}
+                            <option value="{{ state }}" {% if user.address.state == state %}selected{% endif %}>{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="editCountryInput" class="form-label">Country</label>
+                        <input type="text" class="form-control bg-dark text-light border-light" id="editCountryInput" name="country" value="{{ user.address.country or 'India' }}" required>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer bg-secondary-subtle">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-light">Update Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Vehicle Modal -->
+<div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ url_for('user.add_vehicle') }}" class="modal-content bg-dark text-light">
+            <div class="modal-header bg-secondary-subtle">
+                <h5 class="modal-title" id="addVehicleLabel">Add Vehicle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-secondary-subtle">
+                <div class="mb-3">
+                <label for="vehicleNumberInput" class="form-label">Vehicle Number</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="vehicleNumberInput" 
+                    name="vehicle_number" 
+                    placeholder="Enter your vehicle number" 
+                    required>
+                </div>
+                <div class="mb-3">
+                <label for="vehicleTypeInput" class="form-label">Vehicle Type</label>
+                <select 
+                    class="form-select" 
+                    id="vehicleTypeInput" 
+                    name="vehicle_type" 
+                    required>
+                    <option value="" disabled selected>Select vehicle type</option>
+                    <option value="Car">Car</option>
+                    <option value="Bike">Bike</option>
+                    <option value="Other">Other</option>
+                </select>
+                </div>
+            </div>
+            <div class="modal-footer bg-secondary-subtle">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-light">Add Vehicle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

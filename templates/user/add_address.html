@@ -1,0 +1,123 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Add Address</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 87vh;">
+    <form method="POST" class="w-50 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Add Address</h2>
+            <a href="{{ url_for('user.profile') }}" class="btn btn-light" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <!-- Row 1: House Number (1 part) & Address (3 parts) -->
+        <div class="row mb-3">
+            <div class="col-3">
+                <label for="house_number" class="form-label">House No.</label>
+                <input type="text" name="house_number" id="house_number"
+                       class="form-control bg-dark text-light border-light"
+                       placeholder="e.g., 23B">
+            </div>
+            <div class="col-9">
+                <label for="address" class="form-label">Street Address</label>
+                <input type="text" name="address" id="address"
+                       class="form-control bg-dark text-light border-light"
+                       placeholder="e.g., 5th Main Road, Indiranagar" required>
+            </div>
+        </div>
+
+        <!-- Row 2: City, District, Pincode (equal parts) -->
+        <div class="row mb-3">
+            <div class="col">
+                <label for="city" class="form-label">City</label>
+                <input type="text" name="city" id="city"
+                       class="form-control bg-dark text-light border-light"
+                       placeholder="e.g., Bengaluru" required>
+            </div>
+            <div class="col">
+                <label for="district" class="form-label">District</label>
+                <input type="text" name="district" id="district"
+                       class="form-control bg-dark text-light border-light"
+                       placeholder="e.g., Bengaluru Urban">
+            </div>
+            <div class="col">
+                <label for="pincode" class="form-label">Pincode</label>
+                <input type="text" name="pincode" id="pincode"
+                       class="form-control bg-dark text-light border-light"
+                       placeholder="e.g., 560038" pattern="[0-9]{6}" maxlength="6" minlength="6" required>
+            </div>
+        </div>
+
+        <!-- Row 3: State & Country -->
+        <div class="row mb-4">
+            <div class="col-6">
+                <label for="state" class="form-label">State</label>
+                <select class="form-select bg-dark text-light border-light" name="state" id="state" required>
+                    <option selected disabled value="">Select State</option>
+                    <option>Andhra Pradesh</option>
+                    <option>Arunachal Pradesh</option>
+                    <option>Assam</option>
+                    <option>Bihar</option>
+                    <option>Chhattisgarh</option>
+                    <option>Goa</option>
+                    <option>Gujarat</option>
+                    <option>Haryana</option>
+                    <option>Himachal Pradesh</option>
+                    <option>Jharkhand</option>
+                    <option>Karnataka</option>
+                    <option>Kerala</option>
+                    <option>Madhya Pradesh</option>
+                    <option>Maharashtra</option>
+                    <option>Manipur</option>
+                    <option>Meghalaya</option>
+                    <option>Mizoram</option>
+                    <option>Nagaland</option>
+                    <option>Odisha</option>
+                    <option>Punjab</option>
+                    <option>Rajasthan</option>
+                    <option>Sikkim</option>
+                    <option>Tamil Nadu</option>
+                    <option>Telangana</option>
+                    <option>Tripura</option>
+                    <option>Uttar Pradesh</option>
+                    <option>Uttarakhand</option>
+                    <option>West Bengal</option>
+                    <option>Andaman and Nicobar Islands</option>
+                    <option>Chandigarh</option>
+                    <option>Dadra and Nagar Haveli and Daman and Diu</option>
+                    <option>Delhi</option>
+                    <option>Lakshadweep</option>
+                    <option>Puducherry</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" name="country" id="country"
+                       class="form-control bg-dark text-light border-light"
+                       value="India" required>
+            </div>
+        </div>
+
+        <!-- Submit & Cancel Buttons -->
+        <div class="d-flex justify-content-center gap-4">
+            <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-plus-circle me-2"></i>Add Address
+            </button>
+            <a href="{{ url_for('user.profile') }}" class="btn btn-warning px-4">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

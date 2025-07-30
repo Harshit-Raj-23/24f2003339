@@ -1,0 +1,175 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>View Slot</title>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-start mt-4">
+    <div class="w-50 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+
+        <!-- Heading: Lot Name + Back Button -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0">{{ lot.prime_location_name }}</h2>
+            <a href="{{ url_for('user.index') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- Lot Location -->
+            <div class="mb-2">
+                <h5 class="fw-semibold mb-2">Location:</h5>
+                <p class="mb-0">
+                    <i class="bi bi-geo-alt-fill me-1"></i>
+                    {{ lot.address.address }}, {{ lot.address.city }}, {{ lot.address.state }} - {{ lot.address.pincode }}
+                </p>
+                <p>
+                    <i class="bi bi-flag-fill me-1"></i>
+                    <strong>Country:</strong> {{ lot.address.country or "India" }}
+                </p>
+            </div>
+            
+            <!-- Price Box -->
+            <div class="mb-2">
+                <div class="border border-warning border-3 rounded p-2 bg-warning text-dark fw-semibold d-inline-block">
+                    ₹{{ lot.price_per_hour }}/hr
+                </div>
+            </div>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <div class="d-flex justify-content-center align-items-center mt-4">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#spotModal" class="btn btn-danger">
+                <i class="bi bi-hand-index-thumb-fill me-1"></i>Choose Spot
+            </button>
+        </div>
+
+        <!-- Modal for Choosing Vehicle and Spot -->
+        <div class="modal fade" id="spotModal" tabindex="-1" aria-labelledby="spotModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="bookingForm" action="#" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="spotModalLabel">Choose Vehicle & Spot</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <!-- Vehicle Selection -->
+                            <div class="mb-4">
+                                <label for="vehicle_id" class="form-label fw-semibold">Select Your Vehicle:</label>
+                                {% if vehicles|length == 0 %}
+                                    <div class="alert alert-warning mb-2">
+                                        <i class="bi bi-exclamation-circle"></i>
+                                        You don't have any vehicles registered or all your vehicles are currently parked.
+                                    </div>
+                                    <a href="{{ url_for('user.profile') }}" class="btn btn-outline-light">
+                                        <i class="bi bi-plus-circle"></i> Add Vehicle
+                                    </a>
+                                {% else %}
+                                    <select class="form-select" id="vehicle_id" name="vehicle_id" required>
+                                        <option value="" disabled selected>-- Select Vehicle --</option>
+                                        {% for vehicle in vehicles %}
+                                            <option value="{{ vehicle.id }}">{{ vehicle.vehicle_number }} ({{ vehicle.vehicle_type }})</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                            </div>
+
+                            <!-- Spots Heading -->
+                            <h5 class="fw-semibold mb-2">Spots:</h5>
+
+                            <!-- Spots Container -->
+                            <div class="border border-light border-2 rounded p-3 bg-secondary-subtle">
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-2">
+                                    {% for spot in lot.spots %}
+                                        <div class="col">
+                                            <button type="button"
+                                                class="card text-center text-light spot-card"
+                                                data-spot-id="{{ spot.id }}"
+                                                {% if spot.status == 'A' %}
+                                                    style="background-color: #198754; cursor: pointer;"
+                                                {% else %}
+                                                    style="background-color: #dc3545; cursor: not-allowed;" disabled
+                                                {% endif %}
+                                            >
+                                                <div class="card-body py-2 px-1">
+                                                    <h6 class="mb-1">Spot {{ spot.spot_number }}</h6>
+                                                    {% if spot.status == 'A' %}
+                                                        <span><i class="bi bi-check-circle me-1"></i>Available</span>
+                                                    {% else %}
+                                                        <span><i class="bi bi-x-circle me-1"></i>Occupied</span>
+                                                    {% endif %}
+                                                </div>
+                                            </button>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <input type="hidden" name="spot_id" id="spot_id" required>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-light" id="bookBtn" disabled>
+                                <i class="bi bi-calendar-check me-1"></i>Book
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const spotCards = document.querySelectorAll('.spot-card');
+        const spotIdInput = document.getElementById('spot_id');
+        const vehicleSelect = document.getElementById('vehicle_id');
+        const bookBtn = document.getElementById('bookBtn');
+        const bookingForm = document.getElementById('bookingForm');
+
+        // Track selected spot
+        let selectedSpotId = null;
+
+        spotCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove highlight from all
+                spotCards.forEach(c => c.classList.remove('border-warning', 'border-4'));
+                // Add highlight to selected
+                this.classList.add('border-warning', 'border-4');
+                // Set hidden input
+                selectedSpotId = this.getAttribute('data-spot-id');
+                spotIdInput.value = selectedSpotId;
+                checkEnableBook();
+            });
+        });
+
+        if (vehicleSelect) {
+            vehicleSelect.addEventListener('change', checkEnableBook);
+        }
+
+        function checkEnableBook() {
+            // Only enable if both vehicle and spot are selected
+            if (vehicleSelect && vehicleSelect.value && spotIdInput.value) {
+                bookBtn.disabled = false;
+                // Dynamically set form action with the selected spot_id
+                bookingForm.action = "{{ url_for('user.book_spot_post', spot_id=0) }}".replace('0', spotIdInput.value);
+            } else {
+                bookBtn.disabled = true;
+                bookingForm.action = "#";
+            }
+        }
+    });
+</script>
+{% endblock %}
