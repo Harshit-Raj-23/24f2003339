@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary-subtle border-bottom border-light border-2 sticky-top px-3">
+  <div class="container-fluid">
+
+    <!-- Brand (Left) -->
+    <a class="navbar-brand fs-1" href="{{ url_for('user.index') }}">ParkedIn</a>
+
+    <!-- Toggler for mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Centered Nav & Right-side actions -->
+    <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
+
+      <!-- Spacer for Brand -->
+      <div class="d-none d-lg-block me-auto"></div>
+
+      <!-- Nav Links (center) -->
+      {% if user_logged_in %}
+      <ul class="navbar-nav mx-lg-auto mx-0">
+        {% if session.get('is_admin') %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.index') }}"><i class="bi bi-house-door-fill"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.all_users') }}"><i class="bi bi-people-fill"></i> Users</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.all_reservations') }}"><i class="bi bi-calendar2-week"></i> Reservations</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.summary') }}"><i class="bi bi-bar-chart-fill"></i> Summary</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('user.index') }}"><i class="bi bi-house-door-fill"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('user.history') }}"><i class="bi bi-clock-history"></i> History</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('user.summary') }}"><i class="bi bi-bar-chart-fill"></i> Summary</a></li>
+        {% endif %}
+      </ul>
+      {% endif %}
+
+      <!-- Right-side Auth/Profile -->
+      <div class="d-flex align-items-center ms-lg-auto mt-2 mt-lg-0 gap-2">
+        {% if user_logged_in %}
+          <a class="btn btn-outline-light" href="{{ url_for('user.profile') }}" title="Profile"><i class="bi bi-person-circle"></i></a>
+          <a class="btn btn-danger" href="{{ url_for('auth.logout') }}">Logout</a>
+        {% else %}
+          <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Login</a>
+          <a class="btn btn-light" href="{{ url_for('auth.register') }}">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
