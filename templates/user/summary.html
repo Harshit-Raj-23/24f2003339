@@ -1,0 +1,258 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>User Dashboard Summary</title>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h1 class="fw-bold text-light mb-1">Welcome, {{ user_name }}!</h1>
+            <p class="lead text-secondary">Your parking activity and stats overview</p>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 justify-content-center mb-5">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2 mx-2">
+            <div class="card bg-secondary-subtle text-light shadow h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check-fill fs-2 text-info mb-2"></i>
+                    <h5 class="card-title mb-2">Total Bookings</h5>
+                    <h2>{{ total_bookings }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2 mx-2">
+            <div class="card bg-secondary-subtle text-light shadow h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-fill fs-2 text-success mb-2"></i>
+                    <h5 class="card-title mb-2">Active Bookings</h5>
+                    <h2>{{ active_bookings }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2 mx-2">
+            <div class="card bg-secondary-subtle text-light shadow h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-car-front-fill fs-2 text-primary mb-2"></i>
+                    <h5 class="card-title mb-2">Vehicles</h5>
+                    <h2>{{ total_vehicles }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2 mx-2">
+            <div class="card bg-secondary-subtle text-light shadow h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-rupee fs-2 text-warning mb-2"></i>
+                    <h5 class="card-title mb-2">Total Spent</h5>
+                    <h2>₹{{ total_spent or '0.00' }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2 mx-2">
+            <div class="card bg-secondary-subtle text-light shadow h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-geo-alt-fill fs-2 text-secondary mb-2"></i>
+                    <h5 class="card-title mb-2">Favourite Lot</h5>
+                    <h6 class="text-truncate">{{ favourite_lot or 'N/A' }}</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Trends Section -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-12 col-lg-6">
+            <div class="card bg-dark text-light shadow h-100 border-secondary">
+                <div class="card-header bg-secondary-subtle text-light d-flex align-items-center">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i> Spending Over Time
+                </div>
+                <div class="card-body" style="min-height: 350px;">
+                    <canvas id="spendingChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card bg-dark text-light shadow h-100 border-secondary">
+                <div class="card-header bg-secondary-subtle text-light d-flex align-items-center">
+                    <i class="bi bi-clock-history me-2"></i> Bookings Over Time
+                </div>
+                <div class="card-body" style="min-height: 350px;">
+                    <canvas id="bookingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Booking Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-light shadow border-secondary">
+                <div class="card-header bg-secondary-subtle text-light">
+                    <i class="bi bi-layout-text-sidebar-reverse"></i> Recent Bookings
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-borderless m-0 align-middle bg-dark text-light text-center">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>#</th>
+                                <th>Lot</th>
+                                <th>Spot</th>
+                                <th>Vehicle</th>
+                                <th>Status</th>
+                                <th>Booked At</th>
+                                <th>Left At</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_bookings %}
+                                {% for booking in recent_bookings %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ booking.spot.lot.prime_location_name }}</td>
+                                    <td>{{ booking.spot.spot_number }}</td>
+                                    <td>{{ booking.vehicle.vehicle_number }} ({{ booking.vehicle.vehicle_type }})</td>
+                                    <td>
+                                        {% if booking.leaving_timestamp %}
+                                            <span class="badge bg-danger">Released</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ booking.parking_timestamp.strftime('%d-%b-%Y %I:%M %p') }}</td>
+                                    <td>
+                                        {% if booking.leaving_timestamp %}
+                                            {{ booking.leaving_timestamp.strftime('%d-%b-%Y %I:%M %p') }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if booking.parking_cost %}
+                                            ₹{{ booking.parking_cost | round(2) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No bookings found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4">
+        <div class="col-12 col-md-4">
+            <a href="{{ url_for('user.index') }}" class="btn btn-primary w-100 shadow fw-bold text-dark">
+                <i class="bi bi-calendar-plus me-2"></i> Book a Spot
+            </a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a href="{{ url_for('user.profile') }}" class="btn btn-info w-100 shadow fw-bold text-dark">
+                <i class="bi bi-car-front-fill me-2"></i> Manage Vehicles
+            </a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a href="{{ url_for('user.profile') }}" class="btn btn-warning w-100 shadow fw-bold text-dark">
+                <i class="bi bi-person-circle me-2"></i> Profile Settings
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const spendingCtx = document.getElementById('spendingChart').getContext('2d');
+    const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+
+    // Spending Over Time (Bar Chart)
+    new Chart(spendingCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ spending_labels | tojson }},
+            datasets: [{
+                label: 'Amount Spent (₹)',
+                data: {{ spending_data | tojson }},
+                backgroundColor: '#ffc107',
+                borderColor: '#ffc107',
+                borderWidth: 1,
+                hoverBackgroundColor: '#ffca2c',
+                borderRadius: 5,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: value => `₹${value.toLocaleString()}`
+                    }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: 'white' } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `₹${ctx.parsed.y.toLocaleString()}`
+                    }
+                }
+            }
+        }
+    });
+
+    // Bookings Over Time (Line Chart)
+    new Chart(bookingsCtx, {
+        type: 'line',
+        data: {
+            labels: {{ bookings_labels | tojson }},
+            datasets: [{
+                label: 'Bookings',
+                data: {{ bookings_data | tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: '#0d6efd',
+                fill: false,
+                tension: 0.2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: 'white' } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
