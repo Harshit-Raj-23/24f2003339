@@ -1,0 +1,105 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Add Lot</title>
+{% endblock %}
+
+{% block content %}
+    
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+    <form method="post" class="w-75 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Add Parking Lot</h2>
+            <a href="{{ url_for('admin.index') }}" class="btn btn-outline-light" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <!-- Name and Address -->
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <label for="locName" class="form-label">Name</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="locName" id="locName" placeholder="Lot name (e.g. Central Mall Parking)" required>
+            </div>
+            <div class="col-md-7">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="address" id="address" placeholder="Full address (e.g. 123 MG Road, Sector 4)" required>
+            </div>
+        </div>
+
+        <!-- City, Pincode, State -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="city" class="form-label">City</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="city" id="city" placeholder="City name" required>
+            </div>
+            <div class="col-md-4">
+                <label for="pincode" class="form-label">Pincode</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="pincode" id="pincode" pattern="\d{6}" maxlength="6" minlength="6" placeholder="6-digit PIN (e.g. 560001)" required>
+            </div>
+            <div class="col-md-4">
+                <label for="state" class="form-label">State</label>
+                <select class="form-select bg-dark text-light border-light" name="state" id="state" required>
+                    <option selected disabled value="">Select State</option>
+                    <option>Andhra Pradesh</option>
+                    <option>Arunachal Pradesh</option>
+                    <option>Assam</option>
+                    <option>Bihar</option>
+                    <option>Chhattisgarh</option>
+                    <option>Goa</option>
+                    <option>Gujarat</option>
+                    <option>Haryana</option>
+                    <option>Himachal Pradesh</option>
+                    <option>Jharkhand</option>
+                    <option>Karnataka</option>
+                    <option>Kerala</option>
+                    <option>Madhya Pradesh</option>
+                    <option>Maharashtra</option>
+                    <option>Manipur</option>
+                    <option>Meghalaya</option>
+                    <option>Mizoram</option>
+                    <option>Nagaland</option>
+                    <option>Odisha</option>
+                    <option>Punjab</option>
+                    <option>Rajasthan</option>
+                    <option>Sikkim</option>
+                    <option>Tamil Nadu</option>
+                    <option>Telangana</option>
+                    <option>Tripura</option>
+                    <option>Uttar Pradesh</option>
+                    <option>Uttarakhand</option>
+                    <option>West Bengal</option>
+                    <option>Andaman and Nicobar Islands</option>
+                    <option>Chandigarh</option>
+                    <option>Dadra and Nagar Haveli and Daman and Diu</option>
+                    <option>Delhi</option>
+                    <option>Lakshadweep</option>
+                    <option>Puducherry</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Price and Max Spots -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label for="price" class="form-label">Price per Hour</label>
+                <input type="number" class="form-control bg-dark text-light border-light" name="price" id="price" min="1" max="1000" step="1" placeholder="Price in ₹ (e.g. 30)" required>
+            </div>
+            <div class="col-md-6">
+                <label for="maxSpots" class="form-label">Max Spots</label>
+                <input type="number" class="form-control bg-dark text-light border-light" name="maxSpots" id="maxSpots" placeholder="Total number of parking spots" required>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-center gap-4">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-success px-4">Add Lot</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

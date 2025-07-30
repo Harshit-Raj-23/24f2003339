@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>View Lot</title>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-start mt-4">
+    <div class="w-75 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+
+        <!-- Heading: Lot Name + Back Button -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0">{{ lot.prime_location_name }}</h2>
+            <a href="{{ url_for('user.profile') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- Lot Location -->
+            <div class="mb-2">
+                <h5 class="fw-semibold mb-2">Location:</h5>
+                <p class="mb-0">
+                    <i class="bi bi-geo-alt-fill me-1"></i>
+                    {{ lot.address.address }}, {{ lot.address.city }}, {{ lot.address.state }} - {{ lot.address.pincode }}
+                </p>
+                <p>
+                    <i class="bi bi-flag-fill me-1"></i>
+                    <strong>Country:</strong> {{ lot.address.country or "India" }}
+                </p>
+            </div>
+            
+            <!-- Price Box -->
+            <div class="mb-2">
+                <div class="border border-warning border-3 rounded p-2 bg-warning text-dark fw-semibold d-inline-block">
+                    ₹{{ lot.price_per_hour }}/hr
+                </div>
+            </div>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <!-- Spots Heading -->
+        <h5 class="fw-semibold mb-3">Spots:</h5>
+
+        <!-- Spots Container -->
+        <div class="border border-light-subtle border-2 rounded p-4 bg-secondary-subtle">
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                {% for spot in lot.spots %}
+                    <div class="col">
+                        {% if spot.status == 'A' %}
+                            <!-- Available spot as button -->
+                            <a href="" 
+                               class="card text-center text-light text-decoration-none"
+                               style="background-color: #198754; cursor: pointer;">
+                                <div class="card-body py-2 px-1">
+                                    <h6 class="mb-1">Spot {{ spot.spot_number }}</h6>
+                                    <span><i class="bi bi-check-circle me-1"></i>Available</span>
+                                </div>
+                            </a>
+                        {% else %}
+                            <!-- Occupied spot as anchor tag trigger modal -->
+                            <a href="#" 
+                               class="card text-center text-light text-decoration-none"
+                               style="background-color: #dc3545; cursor: pointer;"
+                               data-bs-toggle="modal" data-bs-target="#spotModal{{ spot.id }}">
+                                <div class="card-body py-2 px-1">
+                                    <h6 class="mb-1">Spot {{ spot.spot_number }}</h6>
+                                    <span><i class="bi bi-x-circle me-1"></i>Occupied</span>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    {% if spot.status == 'O' %}
+                        {% set reservation = spot.reservations | selectattr('status', 'equalto', 'A') | list | first %}
+                        <div class="modal fade" id="spotModal{{ spot.id }}" tabindex="-1" aria-labelledby="spotModalLabel{{ spot.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-secondary-subtle text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="spotModalLabel{{ spot.id }}">Spot {{ spot.spot_number }} Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        {% if reservation %}
+                                            <p><strong>User:</strong> {{ reservation.user.full_name }} ({{ reservation.user.email }})</p>
+                                            <p><strong>Vehicle:</strong> {{ reservation.vehicle.vehicle_number }} ({{ reservation.vehicle.vehicle_type }})</p>
+                                            <p><strong>Parked In At:</strong> {{ reservation.parking_timestamp.strftime('%d-%b-%Y %I:%M %p') }}</p>
+
+                                            {% if reservation.leaving_timestamp %}
+                                                <p><strong>Parked Out At:</strong> {{ reservation.leaving_timestamp.strftime('%d-%b-%Y %I:%M %p') }}</p>
+                                                <p><strong>Parking Cost:</strong> ₹{{ "%.2f"|format(reservation.parking_cost) }}</p>
+                                            {% else %}
+                                                {% set duration_seconds = (current_time - reservation.parking_timestamp).total_seconds() %}
+                                                {% set duration_hours = duration_seconds / 3600 %}
+                                                {% set rounded_hours = duration_hours | round(0, 'ceil') %}
+                                                {% set estimated_cost = rounded_hours * lot.price_per_hour %}
+                                                
+                                                <p><strong>Estimated Duration:</strong> {{ (duration_seconds // 3600)|int }} hrs {{ ((duration_seconds % 3600) // 60)|int }} mins</p>
+                                                <p><strong>Estimated Cost:</strong> <span class="badge bg-warning text-dark">₹{{ estimated_cost | round(2) }}</span></p>
+                                                <p class="text-warning"><em>Ongoing reservation</em></p>
+                                            {% endif %}
+                                        {% else %}
+                                            <p>No active reservation data available.</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

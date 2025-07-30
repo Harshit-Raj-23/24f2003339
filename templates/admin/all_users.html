@@ -1,0 +1,158 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  <title>All Users</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    
+    <div class="container rounded-2 border border-2 border-light bg-secondary-subtle mt-4 mb-4">
+        <p class="display-6 m-2 text-center">All Users</p>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <form method="GET" action="{{ url_for('admin.all_users') }}" class="d-flex justify-content-center gap-2 mb-4">
+        <input type="text" 
+               name="query" 
+               class="form-control w-50 bg-secondary-subtle border border-2" 
+               placeholder="Search for @name/email" 
+               {% if query %}
+                value="{{ query }}"
+               {% endif %}>
+        <button class="btn btn-light" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+
+    <!-- Users Table -->
+    <div class="table-responsive shadow rounded">
+        <table class="table table-bordered table-hover align-middle bg-light">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                    {% for user in users %}
+                        <tr class="text-center">
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                {{ user.full_name }}
+                                {% if user.is_admin %}
+                                    <span class="badge bg-success ms-2">Admin</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.registered_at.strftime('%d-%b-%Y') }}</td>
+                            <td>
+                                <!-- View Modal Trigger -->
+                                <button type="button" class="btn btn-sm btn-info" title="View" 
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#viewUserModal{{ user.id }}">
+                                    <i class="bi bi-person-circle"></i>
+                                </button>
+
+                                <!-- Delete (non-admin only) -->
+                                {% if not user.is_admin %}
+                                    <button type="button" class="btn btn-sm btn-danger" title="Delete"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal{{ user.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- View User Modal -->
+                        <div class="modal fade" id="viewUserModal{{ user.id }}" tabindex="-1" aria-labelledby="viewUserLabel{{ user.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-secondary-subtle text-light">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="viewUserLabel{{ user.id }}">User Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Name:</strong> {{ user.full_name }}</p>
+                                        <p><strong>Email:</strong> {{ user.email }}</p>
+                                        <p><strong>Registered On:</strong> {{ user.registered_at.strftime('%d-%b-%Y') }}</p>
+                                        <p><strong>Role:</strong> 
+                                            {% if user.is_admin %}
+                                                <span class="badge bg-success">Admin</span>
+                                            {% else %}
+                                                <span class="badge bg-info">User</span>
+                                            {% endif %}
+                                        </p>
+                                        {% if user.address %}
+                                            <hr>
+                                            <p class="mb-0"><strong>Address:</strong></p>
+                                            <small>
+                                            {{ user.address.house_number ~ ' ' if user.address.house_number else '' }}
+                                            {{ user.address.address }}, 
+                                            {{ user.address.city }}, 
+                                            {{ user.address.state }} - 
+                                            {{ user.address.pincode }},
+                                            {{ user.address.country }}
+                                            </small>
+                                        {% endif %}
+                                        {% if user.vehicles %}
+                                            <hr>
+                                            <p class="mb-0"><strong>Vehicles:</strong></p>
+                                            <ul class="mb-0 ms-3">
+                                                {% for vehicle in user.vehicles %}
+                                                <li>{{ vehicle.vehicle_number }} ({{ vehicle.vehicle_type }})</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete User Modal (only for non-admin) -->
+                        {% if not user.is_admin %}
+                        <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteUserLabel{{ user.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-secondary-subtle text-light">
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" class="modal-content bg-secondary-subtle text-light">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteUserLabel{{ user.id }}">Confirm Delete</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to delete <strong>{{ user.full_name }}</strong>? This action cannot be undone.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="bi bi-x-circle me-1"></i>Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash me-1"></i>Delete
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

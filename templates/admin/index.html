@@ -1,0 +1,118 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Admin</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="container rounded-2 border border-2 border-light bg-secondary-subtle mt-4">
+    <p class="display-6 m-2 text-center">Parking Lots</p>
+</div>
+
+<!-- Search Bar -->
+<div class="container mt-4 text-center">
+    <form method="GET" action="{{ url_for('admin.index') }}" class="d-flex justify-content-center gap-2">
+        <input
+              type="text"
+              name="query"
+              class="form-control w-50 bg-secondary-subtle border border-2"
+              placeholder="Search for @location/pincode"
+              {% if query %}
+                value="{{ query }}"
+              {% endif %}>
+        <button class="btn btn-light" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+</div>
+
+{% if parking_lots %}
+    <div class="container d-flex flex-wrap justify-content-center gap-4 mt-2">
+        {% for lot in parking_lots %}
+            <div class="card rounded shadow text-center mt-4" style="width: 20rem;">
+
+                <!-- Header Section: Parking Lot Name -->
+                <div class="card-header bg-secondary-subtle">
+                    <h5 class="mb-0">{{ lot.prime_location_name }}</h5>
+                </div>
+
+                <!-- Divider -->
+                <hr class="my-0">
+
+                <!-- Body Section -->
+                <div class="card-body text-start">
+                    <!-- Address -->
+                    <h6 class="card-subtitle mb-2"><strong>Address : </strong>
+                        <span class="text-muted text-sm-center">{{ lot.address.house_number if lot.address.house_number else '' }}
+                            {{ lot.address.address }}, {{ lot.address.city }}, {{ lot.address.state }} - {{ lot.address.pincode }}, {{ lot.address.country }}
+                        </span>
+                    </h6>
+                    
+                    <!-- Price per Hour -->
+                    <p class="mb-3"><strong>Price/Hour:</strong> ₹{{ "%.2f" | format(lot.price_per_hour) }}</p>
+
+                    <!-- Occupied Spots Progress Bar -->
+                    {% set total_spots = lot.max_spots %}
+                    {% set occupied_spots = lot.spots | selectattr('status', 'equalto', 'O') | list | length %}
+                    {% set occupied_percent = (occupied_spots / total_spots * 100) if total_spots > 0 else 0 %}
+                    <p class="card-subtitle mb-1"><strong>Occupancy : </strong>{{ occupied_percent|round(0, 'floor') }}%</p>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                            style="width: {{ occupied_percent }}{{ '%;' }}"
+                            aria-valuenow="{{ occupied_percent|round(0, 'floor') }}"
+                            aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Divider -->
+                <hr class="my-0">
+
+                <!-- Footer Section: View, Edit, Delete -->
+                <div class="card-footer d-flex justify-content-around gap-2 flex-wrap bg-secondary-subtle">
+                    <a href="{{ url_for('admin.view_lot', lot_id=lot.id) }}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye me-1"></i> View
+                    </a>
+                    <a href="{{ url_for('admin.edit_parking_lot', lot_id=lot.id) }}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-pencil-square me-1"></i> Edit
+                    </a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ lot.id }}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> Delete
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteModal{{ lot.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ lot.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form method="POST" action="{{ url_for('admin.deleteParkingLot', lot_id=lot.id) }}">
+                        <div class="modal-content bg-secondary-subtle">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel{{ lot.id }}">Confirm Delete</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                Are you sure you want to delete <strong>{{ lot.prime_location_name }}</strong> (Lot #{{ loop.index }})? This action cannot be undone.
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"></i>Cancel</button>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Add Lot Button -->
+<a href="{{ url_for('admin.add_parking_lot') }}" class="btn btn-primary rounded position-fixed bottom-0 start-50 translate-middle-x mb-5 px-4 py-2 shadow">
+    <i class="bi bi-plus-circle me-2"></i>Add Lot
+</a>
+
+{% endblock %}

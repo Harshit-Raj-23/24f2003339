@@ -1,0 +1,84 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Edit Lot</title>
+{% endblock %}
+
+{% block content %}
+    
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+    <form method="post" class="w-75 border border-light border-2 rounded p-4 bg-secondary-subtle text-light">
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Edit Parking Lot</h2>
+            <a href="{{ url_for('admin.index') }}" class="btn btn-outline-light" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+
+        <hr class="border border-light border-2">
+
+        <!-- Name and Address -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="locName" class="form-label">Name</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="locName" id="locName" value="{{ parking_lot.prime_location_name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="address" id="address" value="{{ parking_lot.address.address }}" required>
+            </div>
+        </div>
+
+        <!-- City, Pincode, State -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="city" class="form-label">City</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="city" id="city" value="{{ parking_lot.address.city }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="pincode" class="form-label">Pincode</label>
+                <input type="text" class="form-control bg-dark text-light border-light" name="pincode" id="pincode" pattern="\d{6}" maxlength="6" minlength="6" value="{{ parking_lot.address.pincode }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="state" class="form-label">State</label>
+                <select class="form-select bg-dark text-light border-light" name="state" id="state" required>
+                    <option disabled value="" {% if not parking_lot.address.state %}selected{% endif %}>Select State</option>
+                    {% set states = [
+                        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+                        'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+                        'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+                        'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+                        'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+                        'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Lakshadweep', 'Puducherry'
+                    ] %}
+                    {% for state in states %}
+                        <option value="{{ state }}" {% if parking_lot.address.state == state %}selected{% endif %}>{{ state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Price and Max Spots -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label for="price" class="form-label">Price per Hour</label>
+                <input type="number" class="form-control bg-dark text-light border-light" name="price" id="price" min="1" max="1000" step="1" value="{{ parking_lot.price_per_hour }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="maxSpots" class="form-label">Max Spots</label>
+                <input type="number" class="form-control bg-dark text-light border-light" name="maxSpots" id="maxSpots" value="{{ parking_lot.max_spots }}" required>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-center gap-4">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-success px-4">Update Lot</button>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

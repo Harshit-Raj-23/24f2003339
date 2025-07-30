@@ -1,0 +1,124 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  <title>All Reservations</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <div class="container rounded-2 border border-2 border-light bg-secondary-subtle mt-4 mb-4">
+        <p class="display-6 m-2 text-center">All Reservations</p>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <form method="GET" action="{{ url_for('admin.all_reservations') }}" class="d-flex justify-content-center gap-2 mb-4">
+        <input type="text" 
+               name="query" 
+               class="form-control w-50 bg-secondary-subtle border border-2" 
+               placeholder="Search for @name/location/vehicle" 
+               {% if query %}
+                value="{{ query }}"
+              {% endif %}>
+        <button class="btn btn-light" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+
+    {% if reservations %}
+        <!-- Reservations Table -->
+        <div class="table-responsive rounded shadow">
+            <table class="table table-bordered table-hover align-middle bg-light">
+                <thead class="table-secondary text-center">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Vehicle</th>
+                        <th>Parked In At</th>
+                        <th>Parked Out At</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if reservations %}
+                        {% for booking in reservations %}
+                            <tr class="text-center">
+                                <td>{{ loop.index }}</td>
+                                <td>{{ booking.user.full_name }}</td>
+                                <td>{{ booking.spot.lot.prime_location_name }}</td>
+                                <td>{{ booking.vehicle.vehicle_number }} ({{ booking.vehicle.vehicle_type }})</td>
+                                <td>
+                                    {{ booking.parking_timestamp.strftime('%d-%B-%Y %I:%M %p') }}
+                                </td>
+                                <td>
+                                    {% if booking.leaving_timestamp %}
+                                        {{ booking.leaving_timestamp.strftime('%d-%B-%Y %I:%M %p') }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if booking.parking_cost %}
+                                        ₹{{ '%.2f'|format(booking.parking_cost) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if booking.leaving_timestamp %}
+                                        <span class="badge bg-success mb-1">Parked Out</span>
+                                    {% else %}
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#releaseModal{{ booking.id }}">
+                                            <i class="bi bi-box-arrow-right me-1"></i>Release
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                            <!-- Release Confirmation Modal -->
+                            <div class="modal fade" id="releaseModal{{ booking.id }}" tabindex="-1" aria-labelledby="releaseModalLabel{{ booking.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-secondary-subtle text-light">
+                                        <form method="POST" action="{{ url_for('user.release_slot', booking_id=booking.id) }}" class="modal-content bg-secondary-subtle text-light">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="releaseModalLabel{{ booking.id }}">Confirm Release</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Vehicle:</strong> {{ booking.vehicle.vehicle_number }} ({{ booking.vehicle.vehicle_type }})</p>
+                                                <p><strong>Parked In At:</strong> {{ booking.parking_timestamp.strftime('%d-%B-%Y %I:%M %p') }}</p>
+                                                <p><strong>Current Time:</strong> {{ current_time.strftime('%d-%B-%Y %I:%M %p') }}</p>
+
+                                                {% set duration_seconds_modal = (current_time - booking.parking_timestamp).total_seconds() %}
+                                                {% set duration_hours_modal = duration_seconds_modal / 3600 %}
+                                                {% set rounded_hours_modal = duration_hours_modal | round(0, 'ceil') %}
+                                                {% set estimated_cost_modal = rounded_hours_modal * booking.spot.lot.price_per_hour %}
+
+                                                <p><strong>Duration:</strong> {{ (duration_seconds_modal // 3600)|int }} hrs {{ ((duration_seconds_modal % 3600) // 60)|int }} mins</p>
+                                                <p><strong>Estimated Cost:</strong> <span class="badge bg-warning text-dark">₹{{ '%.2f'|format(estimated_cost_modal) }}</span> (Rounded to {{ rounded_hours_modal }} hrs)</p>
+                                                <p class="text-warning"><em>Are you sure you want to release this parking spot?</em></p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger">Release</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No reservations found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-muted mt-5">You have not booked any parking slots yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
